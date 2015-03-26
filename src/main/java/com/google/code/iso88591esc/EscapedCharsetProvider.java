@@ -2,23 +2,33 @@ package com.google.code.iso88591esc;
 
 import java.nio.charset.Charset;
 import java.nio.charset.spi.CharsetProvider;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class EscapedCharsetProvider extends CharsetProvider {
-	
-	private final static Charset CHARSET = new EscapedCharset();
+
+	private static final Map<String, Charset> CHARSETS = new HashMap<>();
+
+	private static void add(Charset charset) {
+		CHARSETS.put(charset.name(), charset);
+		for (String alias : charset.aliases()) {
+			CHARSETS.put(alias, charset);
+		}
+	}
+
+	static {
+		add(new EscapedCharset(EscapedCharset.NAME, false));
+		add(new EscapedCharset(EscapedCharset.NAME_UPPERCASE, true));
+	}
 
 	@Override
 	public Charset charsetForName(String charsetName) {
-		if(EscapedCharset.NAME.equals(charsetName)) {
-			return CHARSET;
-		}
-		return null;
+		return CHARSETS.get(charsetName);
 	}
 
 	@Override
 	public Iterator<Charset> charsets() {
-		return Collections.singletonList(CHARSET).iterator();
+		return CHARSETS.values().iterator();
 	}
 }
